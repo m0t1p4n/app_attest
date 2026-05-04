@@ -1,7 +1,16 @@
 name: app_attest
 description: "Flutter plugin for Apple App Attest on iOS and Play Integrity on Android."
 version: 0.0.1
-homepage:
+
+homepage: https://github.com/m0t1p4n/app_attest
+repository: https://github.com/m0t1p4n/app_attest
+issue_tracker: https://github.com/m0t1p4n/app_attest/issues
+
+topics:
+  - app integrity
+  - device check
+  - security
+  - app attest
 
 environment:
   sdk: ^3.11.5
