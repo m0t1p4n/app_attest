@@ -98,8 +98,6 @@ class AppAttest {
     return AppAttestAssertion.fromMap(result);
   }
 
-  /// Requests a Play Integrity token on Android.
-  ///
   /// Prepares the Android Standard Play Integrity token provider.
   ///
   /// Call this well before the integrity token is needed, for example at app
@@ -146,20 +144,15 @@ class AppAttest {
     );
   }
 
-  /// Legacy compatibility wrapper for Android Play Integrity token requests.
+  /// Requests an Android Classic Play Integrity token using a nonce.
   ///
-  /// This now warms up the Standard API provider and then uses [nonce] as the
-  /// Standard API `requestHash`. Prefer the explicit Standard API methods:
-  /// [preparePlayIntegrityTokenProvider] and
-  /// [requestStandardPlayIntegrityToken].
-  @Deprecated(
-    'Use preparePlayIntegrityTokenProvider() and '
-    'requestStandardPlayIntegrityToken() instead.',
-  )
-  static Future<String> requestPlayIntegrityToken({
+  /// Prefer [requestStandardPlayIntegrityToken] for new integrations. Use the
+  /// Classic API only when your backend or product requirements still depend on
+  /// the original nonce-based Play Integrity request flow.
+  static Future<String> requestClassicPlayIntegrityToken({
     required String nonce,
     required int cloudProjectNumber,
-  }) async {
+  }) {
     _checkNotEmpty(nonce, 'nonce');
     if (cloudProjectNumber <= 0) {
       throw ArgumentError.value(
@@ -169,10 +162,24 @@ class AppAttest {
       );
     }
 
-    await preparePlayIntegrityTokenProvider(
+    return AppAttestPlatform.instance.requestClassicPlayIntegrityToken(
+      nonce: nonce,
       cloudProjectNumber: cloudProjectNumber,
     );
-    return requestStandardPlayIntegrityToken(requestHash: nonce);
+  }
+
+  /// Backwards-compatible alias for [requestClassicPlayIntegrityToken].
+  @Deprecated(
+    'Use requestClassicPlayIntegrityToken() for Classic API requests.',
+  )
+  static Future<String> requestPlayIntegrityToken({
+    required String nonce,
+    required int cloudProjectNumber,
+  }) {
+    return requestClassicPlayIntegrityToken(
+      nonce: nonce,
+      cloudProjectNumber: cloudProjectNumber,
+    );
   }
 
   static void _checkNotEmpty(String value, String name) {
