@@ -7,10 +7,10 @@ repository: https://github.com/m0t1p4n/app_attest
 issue_tracker: https://github.com/m0t1p4n/app_attest/issues
 
 topics:
-  - app integrity
-  - device check
+  - app_integrity
+  - device_check
   - security
-  - app attest
+  - app_attest
 
 environment:
   sdk: ^3.11.5
