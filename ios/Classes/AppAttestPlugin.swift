@@ -23,6 +23,7 @@ public class AppAttestPlugin: NSObject, FlutterPlugin {
     case "preparePlayIntegrityTokenProvider",
          "clearPreparedPlayIntegrityTokenProvider",
          "requestStandardPlayIntegrityToken",
+         "requestClassicPlayIntegrityToken",
          "requestPlayIntegrityToken":
       result(FlutterError(
         code: "UNSUPPORTED_PLATFORM",

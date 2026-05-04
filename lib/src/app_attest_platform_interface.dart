@@ -59,13 +59,24 @@ abstract class AppAttestPlatform {
     );
   }
 
-  /// Legacy Play Integrity compatibility wrapper.
-  Future<String> requestPlayIntegrityToken({
+  /// Requests an Android Classic Play Integrity token.
+  Future<String> requestClassicPlayIntegrityToken({
     required String nonce,
     required int cloudProjectNumber,
   }) {
     throw UnimplementedError(
-      'requestPlayIntegrityToken() has not been implemented.',
+      'requestClassicPlayIntegrityToken() has not been implemented.',
+    );
+  }
+
+  /// Backwards-compatible alias for Classic Play Integrity token requests.
+  Future<String> requestPlayIntegrityToken({
+    required String nonce,
+    required int cloudProjectNumber,
+  }) {
+    return requestClassicPlayIntegrityToken(
+      nonce: nonce,
+      cloudProjectNumber: cloudProjectNumber,
     );
   }
 }

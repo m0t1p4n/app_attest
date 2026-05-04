@@ -55,12 +55,11 @@ class FakeAppAttestPlatform extends AppAttestPlatform {
   }
 
   @override
-  Future<String> requestPlayIntegrityToken({
+  Future<String> requestClassicPlayIntegrityToken({
     required String nonce,
     required int cloudProjectNumber,
   }) async {
-    preparedCloudProjectNumber = cloudProjectNumber;
-    return 'standard-play-integrity-token:$nonce:$cloudProjectNumber';
+    return 'classic-play-integrity-token:$nonce:$cloudProjectNumber';
   }
 }
 
@@ -97,11 +96,18 @@ void main() {
       'standard-play-integrity-token:hash:123',
     );
     expect(
+      await AppAttest.requestClassicPlayIntegrityToken(
+        nonce: 'legacy-hash',
+        cloudProjectNumber: 123,
+      ),
+      'classic-play-integrity-token:legacy-hash:123',
+    );
+    expect(
       await AppAttest.requestPlayIntegrityToken(
         nonce: 'legacy-hash',
         cloudProjectNumber: 123,
       ),
-      'standard-play-integrity-token:legacy-hash:123',
+      'classic-play-integrity-token:legacy-hash:123',
     );
   });
 
@@ -122,6 +128,13 @@ void main() {
     );
     expect(
       () => AppAttest.requestStandardPlayIntegrityToken(requestHash: ' '),
+      throwsArgumentError,
+    );
+    expect(
+      () => AppAttest.requestClassicPlayIntegrityToken(
+        nonce: 'nonce',
+        cloudProjectNumber: 0,
+      ),
       throwsArgumentError,
     );
     expect(
@@ -161,6 +174,8 @@ void main() {
               return null;
             case 'requestStandardPlayIntegrityToken':
               return 'standard-play-integrity-token';
+            case 'requestClassicPlayIntegrityToken':
+              return 'classic-play-integrity-token';
           }
           return null;
         });
@@ -188,11 +203,11 @@ void main() {
       'standard-play-integrity-token',
     );
     expect(
-      await implementation.requestPlayIntegrityToken(
+      await implementation.requestClassicPlayIntegrityToken(
         nonce: 'legacy-hash',
         cloudProjectNumber: 456,
       ),
-      'standard-play-integrity-token',
+      'classic-play-integrity-token',
     );
     await implementation.clearPreparedPlayIntegrityTokenProvider();
 
@@ -203,13 +218,14 @@ void main() {
       'generateAssertion',
       'preparePlayIntegrityTokenProvider',
       'requestStandardPlayIntegrityToken',
-      'preparePlayIntegrityTokenProvider',
-      'requestStandardPlayIntegrityToken',
+      'requestClassicPlayIntegrityToken',
       'clearPreparedPlayIntegrityTokenProvider',
     ]);
     expect(calls[4].arguments, <String, dynamic>{'cloudProjectNumber': 123});
-    expect(calls[6].arguments, <String, dynamic>{'cloudProjectNumber': 456});
-    expect(calls[7].arguments, <String, dynamic>{'requestHash': 'legacy-hash'});
+    expect(calls[6].arguments, <String, dynamic>{
+      'nonce': 'legacy-hash',
+      'cloudProjectNumber': 456,
+    });
 
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(implementation.methodChannel, null);
