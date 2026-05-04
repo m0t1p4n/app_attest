@@ -1,13 +1,13 @@
 Pod::Spec.new do |s|
   s.name             = 'app_attest'
-  s.version          = '0.0.1'
+  s.version          = '0.1.0'
   s.summary          = 'Flutter plugin for Apple App Attest and Android Play Integrity.'
   s.description      = <<-DESC
 Flutter plugin for Apple App Attest on iOS and Play Integrity on Android.
                        DESC
-  s.homepage         = 'https://example.com/app_attest'
-  s.license          = { :file => '../LICENSE' }
-  s.author           = { 'app_attest' => 'dev@example.com' }
+  s.homepage         = 'https://github.com/m0t1p4n/app_attest'
+  s.license          = { :type => 'MIT', :file => '../LICENSE' }
+  s.author           = { 'motsipan' => 'https://github.com/m0t1p4n' }
   s.source           = { :path => '.' }
   s.source_files     = 'Classes/**/*'
   s.dependency 'Flutter'
