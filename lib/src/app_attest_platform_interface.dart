@@ -34,7 +34,32 @@ abstract class AppAttestPlatform {
     throw UnimplementedError('generateAssertion() has not been implemented.');
   }
 
-  /// Requests an Android Play Integrity token.
+  /// Prepares the Android Standard Play Integrity token provider.
+  Future<void> preparePlayIntegrityTokenProvider({
+    required int cloudProjectNumber,
+  }) {
+    throw UnimplementedError(
+      'preparePlayIntegrityTokenProvider() has not been implemented.',
+    );
+  }
+
+  /// Clears the cached Android Standard Play Integrity token provider.
+  Future<void> clearPreparedPlayIntegrityTokenProvider() {
+    throw UnimplementedError(
+      'clearPreparedPlayIntegrityTokenProvider() has not been implemented.',
+    );
+  }
+
+  /// Requests an Android Standard Play Integrity token.
+  Future<String> requestStandardPlayIntegrityToken({
+    required String requestHash,
+  }) {
+    throw UnimplementedError(
+      'requestStandardPlayIntegrityToken() has not been implemented.',
+    );
+  }
+
+  /// Legacy Play Integrity compatibility wrapper.
   Future<String> requestPlayIntegrityToken({
     required String nonce,
     required int cloudProjectNumber,

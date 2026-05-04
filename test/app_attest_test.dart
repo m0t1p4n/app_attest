@@ -5,6 +5,8 @@ import 'package:app_attest/app_attest.dart';
 import 'package:app_attest/src/method_channel_app_attest.dart';
 
 class FakeAppAttestPlatform extends AppAttestPlatform {
+  int? preparedCloudProjectNumber;
+
   @override
   Future<bool> isSupported() async => true;
 
@@ -34,11 +36,31 @@ class FakeAppAttestPlatform extends AppAttestPlatform {
   }
 
   @override
+  Future<void> preparePlayIntegrityTokenProvider({
+    required int cloudProjectNumber,
+  }) async {
+    preparedCloudProjectNumber = cloudProjectNumber;
+  }
+
+  @override
+  Future<void> clearPreparedPlayIntegrityTokenProvider() async {
+    preparedCloudProjectNumber = null;
+  }
+
+  @override
+  Future<String> requestStandardPlayIntegrityToken({
+    required String requestHash,
+  }) async {
+    return 'standard-play-integrity-token:$requestHash:$preparedCloudProjectNumber';
+  }
+
+  @override
   Future<String> requestPlayIntegrityToken({
     required String nonce,
     required int cloudProjectNumber,
   }) async {
-    return 'play-integrity-token';
+    preparedCloudProjectNumber = cloudProjectNumber;
+    return 'standard-play-integrity-token:$nonce:$cloudProjectNumber';
   }
 }
 
@@ -69,12 +91,17 @@ void main() {
     expect(assertion.keyId, 'key-id');
     expect(assertion.assertionObject, 'assertion-base64');
 
+    await AppAttest.preparePlayIntegrityTokenProvider(cloudProjectNumber: 123);
+    expect(
+      await AppAttest.requestStandardPlayIntegrityToken(requestHash: 'hash'),
+      'standard-play-integrity-token:hash:123',
+    );
     expect(
       await AppAttest.requestPlayIntegrityToken(
-        nonce: 'nonce',
+        nonce: 'legacy-hash',
         cloudProjectNumber: 123,
       ),
-      'play-integrity-token',
+      'standard-play-integrity-token:legacy-hash:123',
     );
   });
 
@@ -87,6 +114,14 @@ void main() {
     );
     expect(
       () => AppAttest.generateAssertion(keyId: 'key-id', challenge: ' '),
+      throwsArgumentError,
+    );
+    expect(
+      () => AppAttest.preparePlayIntegrityTokenProvider(cloudProjectNumber: 0),
+      throwsArgumentError,
+    );
+    expect(
+      () => AppAttest.requestStandardPlayIntegrityToken(requestHash: ' '),
       throwsArgumentError,
     );
     expect(
@@ -120,8 +155,12 @@ void main() {
                 'keyId': (call.arguments as Map<dynamic, dynamic>)['keyId'],
                 'assertionObject': 'assertion-base64',
               };
-            case 'requestPlayIntegrityToken':
-              return 'play-integrity-token';
+            case 'preparePlayIntegrityTokenProvider':
+              return null;
+            case 'clearPreparedPlayIntegrityTokenProvider':
+              return null;
+            case 'requestStandardPlayIntegrityToken':
+              return 'standard-play-integrity-token';
           }
           return null;
         });
@@ -139,25 +178,38 @@ void main() {
       ),
       containsPair('assertionObject', 'assertion-base64'),
     );
+    await implementation.preparePlayIntegrityTokenProvider(
+      cloudProjectNumber: 123,
+    );
+    expect(
+      await implementation.requestStandardPlayIntegrityToken(
+        requestHash: 'request-hash',
+      ),
+      'standard-play-integrity-token',
+    );
     expect(
       await implementation.requestPlayIntegrityToken(
-        nonce: 'nonce',
-        cloudProjectNumber: 123,
+        nonce: 'legacy-hash',
+        cloudProjectNumber: 456,
       ),
-      'play-integrity-token',
+      'standard-play-integrity-token',
     );
+    await implementation.clearPreparedPlayIntegrityTokenProvider();
 
     expect(calls.map((call) => call.method), <String>[
       'isSupported',
       'generateKey',
       'attestKey',
       'generateAssertion',
-      'requestPlayIntegrityToken',
+      'preparePlayIntegrityTokenProvider',
+      'requestStandardPlayIntegrityToken',
+      'preparePlayIntegrityTokenProvider',
+      'requestStandardPlayIntegrityToken',
+      'clearPreparedPlayIntegrityTokenProvider',
     ]);
-    expect(calls.last.arguments, <String, dynamic>{
-      'nonce': 'nonce',
-      'cloudProjectNumber': 123,
-    });
+    expect(calls[4].arguments, <String, dynamic>{'cloudProjectNumber': 123});
+    expect(calls[6].arguments, <String, dynamic>{'cloudProjectNumber': 456});
+    expect(calls[7].arguments, <String, dynamic>{'requestHash': 'legacy-hash'});
 
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(implementation.methodChannel, null);

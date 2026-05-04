@@ -20,7 +20,10 @@ public class AppAttestPlugin: NSObject, FlutterPlugin {
       attestKey(call: call, result: result)
     case "generateAssertion":
       generateAssertion(call: call, result: result)
-    case "requestPlayIntegrityToken":
+    case "preparePlayIntegrityTokenProvider",
+         "clearPreparedPlayIntegrityTokenProvider",
+         "requestStandardPlayIntegrityToken",
+         "requestPlayIntegrityToken":
       result(FlutterError(
         code: "UNSUPPORTED_PLATFORM",
         message: "Play Integrity is only available on Android.",

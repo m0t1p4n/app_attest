@@ -1,114 +1,90 @@
 # app_attest
 
-Flutter plugin for device/app integrity checks:
+Flutter plugin for:
 
-- **iOS**: Apple DeviceCheck **App Attest** (`DCAppAttestService`).
-- **Android**: Google Play **Play Integrity API**.
+- **iOS** Apple App Attest (`DeviceCheck` / `DCAppAttestService`)
+- **Android** Google Play Integrity **Standard API**
 
-The plugin returns native attestation/assertion data to Flutter. Your backend
-must verify every attestation, assertion, and Play Integrity token. Do not trust
-these values only on the client.
-
-## Platform requirements
+## What is implemented
 
 ### iOS
 
-- iOS 14.0+.
-- A real signed device for App Attest validation. App Attest is not a reliable
-  simulator-only flow.
-- App Attest capability/entitlement configured for your app identifier in Apple
-  Developer settings and Xcode.
-- Server-side verification following Apple's App Attest documentation.
+- `AppAttest.isSupported()`
+- `AppAttest.generateKey()`
+- `AppAttest.attestKey(...)`
+- `AppAttest.generateAssertion(...)`
 
 ### Android
 
-- Android minSdk 21+.
-- Google Play Integrity configured in Play Console / Google Cloud.
-- A valid numeric Google Cloud project number.
-- Server-generated nonce/challenge and backend verification of the returned JWS.
+- `AppAttest.isSupported()`
+- `AppAttest.preparePlayIntegrityTokenProvider(...)`
+- `AppAttest.requestStandardPlayIntegrityToken(...)`
+- `AppAttest.clearPreparedPlayIntegrityTokenProvider()`
 
-## Usage
+The Android implementation follows the **Standard API** flow recommended by
+Google Play:
 
-Add the package to your Flutter app, then import it:
+1. warm up a token provider once
+2. request tokens on demand with a `requestHash`
 
-```dart
-import 'package:app_attest/app_attest.dart';
-```
+## Android Standard Play Integrity flow
 
-### iOS App Attest
-
-```dart
-final supported = await AppAttest.isSupported();
-if (!supported) {
-  // Fallback: the device/OS does not support App Attest.
-  return;
-}
-
-// 1. Ask your backend for a one-time challenge.
-final challenge = 'server-generated-challenge';
-
-// 2. Generate a key once and store the keyId after your backend accepts it.
-final keyId = await AppAttest.generateKey();
-
-// 3. Send attestation.attestationObject and keyId to your backend.
-final attestation = await AppAttest.attestKey(
-  keyId: keyId,
-  challenge: challenge,
-);
-
-// 4. Later, generate assertions for new server challenges.
-final assertion = await AppAttest.generateAssertion(
-  keyId: keyId,
-  challenge: 'another-server-challenge',
-);
-```
-
-Returned iOS data is base64 encoded:
-
-- `AppAttestAttestation.keyId`
-- `AppAttestAttestation.attestationObject`
-- `AppAttestAssertion.keyId`
-- `AppAttestAssertion.assertionObject`
-
-The plugin SHA-256 hashes the challenge natively before calling Apple's
-`attestKey` / `generateAssertion`, as required by `DCAppAttestService`.
-
-### Android Play Integrity
+Before requesting a token, prepare the provider once:
 
 ```dart
-final supported = await AppAttest.isSupported();
-if (!supported) {
-  // Fallback: Play Integrity manager could not be initialized.
-  return;
-}
-
-final token = await AppAttest.requestPlayIntegrityToken(
-  nonce: 'server-generated-nonce',
+await AppAttest.preparePlayIntegrityTokenProvider(
   cloudProjectNumber: 123456789012,
 );
-
-// Send token to your backend for Play Integrity JWS verification.
 ```
 
-## API
+When you need to protect a backend request, compute a stable request hash in
+your app and request a token:
 
-- `AppAttest.isSupported()`
-- `AppAttest.generateKey()` — iOS only
-- `AppAttest.attestKey({required keyId, required challenge})` — iOS only
-- `AppAttest.generateAssertion({required keyId, required challenge})` — iOS only
-- `AppAttest.requestPlayIntegrityToken({required nonce, required cloudProjectNumber})` — Android only
-
-Unsupported platform calls throw `PlatformException` with code
-`UNSUPPORTED_PLATFORM`.
-
-## Development checks
-
-```sh
-flutter pub get
-flutter analyze
-flutter test
+```dart
+final token = await AppAttest.requestStandardPlayIntegrityToken(
+  requestHash: 'sha256-of-stable-request-payload',
+);
 ```
 
-Native App Attest / Play Integrity behavior must also be validated in a real app
-on real configured devices because both services depend on signing, app identity,
-entitlements, Play Console setup, and backend verification.
+Send the returned token to your backend for decode + verification using Google
+Play Integrity server APIs.
+
+### Important
+
+- `requestHash` should be a digest of the request you want to protect.
+- Do **not** send sensitive plain text as `requestHash`.
+- If the provider expires, prepare it again.
+- Tokens must be verified on your backend, not trusted only on device.
+
+### Optional reset
+
+```dart
+await AppAttest.clearPreparedPlayIntegrityTokenProvider();
+```
+
+## iOS App Attest flow
+
+```dart
+final supported = await AppAttest.isSupported();
+if (!supported) return;
+
+final keyId = await AppAttest.generateKey();
+
+final attestation = await AppAttest.attestKey(
+  keyId: keyId,
+  challenge: 'server-generated-challenge',
+);
+
+final assertion = await AppAttest.generateAssertion(
+  keyId: keyId,
+  challenge: 'server-generated-challenge',
+);
+```
+
+## Legacy Android method
+
+`AppAttest.requestPlayIntegrityToken(...)` is kept as a deprecated compatibility
+wrapper. Internally it now prepares the Standard API provider and uses the
+provided `nonce` value as the Standard API `requestHash`.
+
+Prefer the explicit Standard API methods for new code.

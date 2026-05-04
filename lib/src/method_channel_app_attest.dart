@@ -63,23 +63,48 @@ class MethodChannelAppAttest extends AppAttestPlatform {
   }
 
   @override
-  Future<String> requestPlayIntegrityToken({
-    required String nonce,
+  Future<void> preparePlayIntegrityTokenProvider({
     required int cloudProjectNumber,
+  }) {
+    return methodChannel.invokeMethod<void>(
+      'preparePlayIntegrityTokenProvider',
+      <String, dynamic>{'cloudProjectNumber': cloudProjectNumber},
+    );
+  }
+
+  @override
+  Future<void> clearPreparedPlayIntegrityTokenProvider() {
+    return methodChannel.invokeMethod<void>(
+      'clearPreparedPlayIntegrityTokenProvider',
+    );
+  }
+
+  @override
+  Future<String> requestStandardPlayIntegrityToken({
+    required String requestHash,
   }) async {
     final token = await methodChannel.invokeMethod<String>(
-      'requestPlayIntegrityToken',
-      <String, dynamic>{
-        'nonce': nonce,
-        'cloudProjectNumber': cloudProjectNumber,
-      },
+      'requestStandardPlayIntegrityToken',
+      <String, dynamic>{'requestHash': requestHash},
     );
     if (token == null || token.isEmpty) {
       throw PlatformException(
         code: 'NULL_RESULT',
-        message: 'Native requestPlayIntegrityToken returned an empty token.',
+        message:
+            'Native requestStandardPlayIntegrityToken returned an empty token.',
       );
     }
     return token;
+  }
+
+  @override
+  Future<String> requestPlayIntegrityToken({
+    required String nonce,
+    required int cloudProjectNumber,
+  }) async {
+    await preparePlayIntegrityTokenProvider(
+      cloudProjectNumber: cloudProjectNumber,
+    );
+    return requestStandardPlayIntegrityToken(requestHash: nonce);
   }
 }
