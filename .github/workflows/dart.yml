@@ -16,7 +16,7 @@ jobs:
       # Install Flutter SDK
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'stable'   # change to a specific version if you need pinning
+          flutter-version: '3.10.6' 
 
       - name: Install dependencies
         run: flutter pub get
