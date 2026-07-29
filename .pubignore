@@ -6,5 +6,8 @@ build/
 coverage/
 *.iml
 pubspec.lock
+.build/
+.swiftpm/
+Package.resolved
 
 

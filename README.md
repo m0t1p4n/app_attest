@@ -46,6 +46,13 @@ App Attest requires:
 In Xcode, enable the **App Attest** capability for your app target. App Attest
 does not provide useful production guarantees from a simulator.
 
+#### Swift Package Manager
+
+The iOS plugin ships as a Swift package (`ios/app_attest/Package.swift`) and is
+picked up automatically when Swift Package Manager is enabled for your app.
+CocoaPods keeps working unchanged — the podspec builds the same sources — so no
+migration is required on your side.
+
 ### Android
 
 Play Integrity requires:

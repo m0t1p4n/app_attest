@@ -1,3 +1,9 @@
+## 0.1.1
+
+* Added Swift Package Manager support for iOS.
+* Moved the iOS sources from `ios/Classes/` to `ios/app_attest/Sources/app_attest/`.
+* Updated the podspec to build from the Swift package layout, so CocoaPods keeps working unchanged.
+
 ## 0.1.0
 
 * Initial Flutter plugin implementation.
