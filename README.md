@@ -25,7 +25,7 @@ Add the package to your Flutter app:
 
 ```yaml
 dependencies:
-  app_attest: ^0.2.0
+  app_attest: ^0.2.1
 ```
 
 Then run:
