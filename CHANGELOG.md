@@ -1,3 +1,12 @@
+## 0.2.0
+
+* Migrated the Android build to Built-in Kotlin: the plugin no longer applies the Kotlin Gradle Plugin (`kotlin-android`), so apps stop emitting the Flutter KGP deprecation warning and keep building on AGP 9+.
+* Replaced the `kotlinOptions` block with the `kotlin { compilerOptions { ... } }` DSL.
+* Bumped the Android toolchain to AGP 8.11.1 / Kotlin 2.2.20 and `compileSdk` 36, the versions required by Flutter 3.44.
+* Raised the Java/Kotlin target from 8 to 17, as required by Flutter 3.44.
+* Added `android/settings.gradle` so `android/` can be opened as a standalone Gradle project in Android Studio / IntelliJ.
+* **Breaking:** requires Flutter >= 3.44.0 and Dart >= 3.12.0.
+
 ## 0.1.1
 
 * Added Swift Package Manager support for iOS.
