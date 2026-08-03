@@ -19,11 +19,13 @@ trusting the result.
 
 ## Installation
 
+Requires Flutter 3.44.0 or later (Dart 3.12.0 or later).
+
 Add the package to your Flutter app:
 
 ```yaml
 dependencies:
-  app_attest: ^0.1.0
+  app_attest: ^0.2.0
 ```
 
 Then run:
@@ -64,6 +66,19 @@ Play Integrity requires:
 
 For server-side token decoding, configure a service account with the Play
 Integrity API scope in the Google Cloud project associated with your app.
+
+#### Built-in Kotlin
+
+Since 0.2.0 the Android plugin no longer applies the Kotlin Gradle Plugin
+(`kotlin-android`). Flutter applies it for you on AGP 8.x, and AGP 9+ compiles
+Kotlin with [Built-in Kotlin][built-in-kotlin]. This means your app no longer
+logs the "plugins that apply KGP" build warning because of this package.
+
+The plugin compiles against `compileSdk` 36 with a Java/Kotlin target of 17, so
+your app needs JDK 17 or later — which Flutter 3.44 already requires. Apps
+generated from the Flutter 3.44 template need no changes.
+
+[built-in-kotlin]: https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin
 
 ## iOS App Attest usage
 
